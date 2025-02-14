@@ -31,7 +31,10 @@ class Menu extends Phaser.Scene{
         this.sky = this.add.tileSprite(0, 0, 640, 480, "sky").setOrigin(0, 0)
         this.menuTiger = new Tiger(this, 288, 530, "tiger").setOrigin(0, 0)
         this.menuHunter = this.add.sprite(320, 480, "hunter").setOrigin(0, 0)
-        this.startButton = this.add.sprite(320, 240, "startButton").setInteractive()
+        this.startButton = this.add.sprite(320, 200, "startButton").setInteractive()
+        this.add.text(320, 250, "Press SPACE to Jump and ENTER to Attack", { fontSize: "20px", fill: "black" }).setOrigin(0.5)
+        this.add.text(320, 280, "Survive as long as you can!", { fontSize: "20px", fill: "black" }).setOrigin(0.5)
+        this.add.text(320, 320, "Press C for Credits", { fontSize: "20px", fill: "black" }).setOrigin(0.5)
         this.startButton.on("pointerdown", () => {
             this.sound.play("start")
             this.scene.start("playScene")
@@ -43,6 +46,9 @@ class Menu extends Phaser.Scene{
         this.startButton.on("pointerout", () => {
             this.startButton.setScale(1)
             this.startButton.clearTint()
+        })
+        this.input.keyboard.on("keydown-C", () => {
+            this.scene.start("creditsScene")
         })
     }
 }

@@ -28,6 +28,7 @@ class Play extends Phaser.Scene{
         this.hunterSpeedMultiplier = 1
         this.time.addEvent({
             delay: 10000,
+            
             callback: () => { this.hunterSpeedMultiplier += 0.5 },
             callbackScope: this,
             loop: true
