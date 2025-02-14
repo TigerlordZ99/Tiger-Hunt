@@ -5,13 +5,56 @@ class Play extends Phaser.Scene{
     
     create(){
         //SETUP
+        if (!this.sound.get("bgm")) {
+            this.bgm = this.sound.add("bgm", { loop: true, volume: 0.5 })
+            this.bgm.play()
+        }
         this.sky = this.add.tileSprite(0, 0, 640, 480, "sky").setOrigin(0, 0)
         this.physics.world.setBounds(0, 0, 640, 480)
         keyJUMP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         keyATTACK = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
         this.p1Tiger = new Tiger(this, 60, 370, "tiger").setOrigin(0, 0)
-        this.physics.add.collider(this.p1Tiger, this.ground)
+
+        //HUNTER
+        this.hunterGroup = this.physics.add.group()
+        this.spawnHunter()
+        this.time.addEvent({
+            delay: 2000,
+            callback: this.spawnHunter,
+            callbackScope: this,
+            loop: true
+        })
+
+        this.hunterSpeedMultiplier = 1
+        this.time.addEvent({
+            delay: 10000,
+            callback: () => { this.hunterSpeedMultiplier += 0.5 },
+            callbackScope: this,
+            loop: true
+        })
+
+        this.hunterSpawnRate = 2000
         
+        this.hunterSpawnEvent = this.time.addEvent({
+            delay: this.hunterSpawnRate,
+            callback: this.spawnHunter,
+            callbackScope: this,
+            loop: true
+        })
+
+        this.time.addEvent({
+            delay: 30000,
+            callback: () => {
+                this.hunterSpawnRate /= 2
+                this.hunterSpawnEvent.reset({
+                    delay: this.hunterSpawnRate,
+                    callback: this.spawnHunter,
+                    callbackScope: this,
+                    loop: true
+                })
+            },
+        })
+
         //HEALTH
         this.maxHealth = 3
         this.health = this.maxHealth
@@ -50,17 +93,17 @@ class Play extends Phaser.Scene{
         this.physics.add.overlap(this.p1Tiger, this.foodGroup, this.collectFood, null, this)
 
         //DAMAGE
-        this.time.addEvent({
-            delay: 10000,
-            callback: this.decreaseHealth,
-            callbackScope: this,
-            loop: true
-        })
+        this.physics.add.overlap(this.p1Tiger, this.hunterGroup, this.dealDamage, null, this)
+
 
         console.log("Health is " + this.health)
     }
 
     update(){
+        if (this.health <= 0) {
+            this.p1Tiger.die()
+        }
+
         this.sky.tilePositionX += 2
         this.p1Tiger.update()
 
@@ -70,14 +113,21 @@ class Play extends Phaser.Scene{
                 food.destroy()
             }
         }, this)
+
+        this.hunterGroup.children.each((hunter) => {
+            hunter.update()
+            hunter.dealDamage(this.p1Tiger)
+        }, this)
     }
 
-    decreaseHealth(){
-        if (this.health > 0) {
-            this.health -= 1
-            console.log("Health is " + this.health)
-            this.updateHealthIcons()
-        }
+    dealDamage(tiger, hunter) {
+        tiger.takeDamage()
+        this.sound.play("punch")
+        hunter.destroy()
+    }
+
+    hitHunter(hitbox, hunter) {
+        hunter.destroy()
     }
 
     spawnFood(){
@@ -96,11 +146,12 @@ class Play extends Phaser.Scene{
             this.updateHealthIcons()
             console.log("Health is " + this.health)
         }
+        this.sound.play("chomp")
         food.destroy()
     }
     
     updateHealthIcons() {
-        for (let i = 0; i < this.maxHealth; i++) {
+        for (let i = 0; i < 3; i++) {
             this.healthIcons[i].setVisible(i < this.health)
         }
     }
@@ -108,5 +159,26 @@ class Play extends Phaser.Scene{
     increaseScore() {
         this.score += 1
         this.scoreText.setText('Score: ' + this.score)
+    }
+
+    gameOver() {
+        if (this.bgm) this.bgm.stop()
+        this.sound.play("gameOver")
+        this.scene.start("gameOverScene", { score: this.score })
+    }
+
+    spawnHunter() {
+        let x = 700
+        let y = 370
+        let minDistance = 50
+        let canSpawn = this.hunterGroup.getChildren().every(hunter => Math.abs(hunter.x - x) > minDistance)
+        if (canSpawn) {
+            let hunter = new Hunter(this, x, y, "hunter")
+            this.hunterGroup.add(hunter)
+            this.physics.add.collider(hunter, this.p1Tiger)
+            hunter.setCollideWorldBounds(true)
+        } else {
+            this.time.delayedCall(500, this.spawnHunter, [], this)
+        }
     }
 }

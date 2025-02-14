@@ -1,6 +1,6 @@
 // Madhav Ramakrishnan
 // 2/13/2025
-//
+// 16 Hours
 // 
 let config = {
     type: Phaser.AUTO,
@@ -13,7 +13,7 @@ let config = {
             debug: true
         }
     },
-    scene: [ Menu, Play ]
+    scene: [ Menu, Play, GameOver ]
 }
 let game = new Phaser.Game(config)
 
