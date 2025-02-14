@@ -25,6 +25,21 @@ class Play extends Phaser.Scene{
         this.foodGroup = this.physics.add.group()
         this.spawnFood()
 
+        //SCORE
+        this.score = 0;
+        this.scoreText = this.add.text(20, 20, 'Score: 0', {
+        fontSize: '32px',
+        fill: 'black '
+        })
+
+        this.time.addEvent({
+            delay: 50,
+            callback: this.increaseScore,
+            callbackScope: this,
+            loop: true
+        })
+
+        //FOOD SPAWN
         this.time.addEvent({
             delay: 10000,
             callback: this.spawnFood,
@@ -88,5 +103,10 @@ class Play extends Phaser.Scene{
         for (let i = 0; i < this.maxHealth; i++) {
             this.healthIcons[i].setVisible(i < this.health)
         }
+    }
+
+    increaseScore() {
+        this.score += 1
+        this.scoreText.setText('Score: ' + this.score)
     }
 }
