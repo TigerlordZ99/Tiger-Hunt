@@ -29,6 +29,15 @@ class Menu extends Phaser.Scene{
             frameRate: 30
         })
         this.sky = this.add.tileSprite(0, 0, 640, 480, "sky").setOrigin(0, 0)
+        this.add.text(320, 100, "Tiger Hunt", {
+            fontSize: "48px",
+            fontFamily: "Arial",
+            fontStyle: "bold",
+            color: "orange",
+            stroke: "black",
+            strokeThickness: 6,
+            align: "center"
+        }).setOrigin(0.5);
         this.menuTiger = new Tiger(this, 288, 530, "tiger").setOrigin(0, 0)
         this.menuHunter = this.add.sprite(320, 480, "hunter").setOrigin(0, 0)
         this.startButton = this.add.sprite(320, 200, "startButton").setInteractive()
